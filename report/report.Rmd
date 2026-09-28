@@ -1,0 +1,90 @@
+---
+title: "`r if (nzchar(params$res$settings$title)) params$res$settings$title else 'Burden of disease report'`"
+date: "`r format(params$res$settings$timestamp, '%d %B %Y')`"
+output:
+  html_document:
+    toc: true
+    toc_float: true
+    theme: flatly
+    self_contained: true
+params:
+  res: NULL
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(echo = FALSE, message = FALSE, warning = FALSE,
+                      fig.width = 9, fig.height = 6, dpi = 110)
+r <- params$res
+s <- r$settings
+cur <- s$currency
+ci <- round(s$conf * 100)
+tot <- function(m, f = "estimate") r$totals[r$totals$measure == m, f]
+```
+
+## Summary
+
+The disease caused an estimated **`r format_num(tot("DALY"), 0)` DALYs**
+(`r ci`% UI `r format_num(tot("DALY", "lower"), 0)`–`r format_num(tot("DALY", "upper"), 0)`),
+equivalent to `r format_num(tot("DALY per 100,000"), 1)` DALYs per 100,000 population.
+Years of life lost account for `r format_num(tot("YLL") / tot("DALY") * 100, 1)`% of the total.
+
+The total economic burden was **`r format_money(tot("Total economic burden"), cur)`**
+(`r ci`% UI `r format_money(tot("Total economic burden", "lower"), cur)`–`r format_money(tot("Total economic burden", "upper"), cur)`).
+
+```{r totals}
+knitr::kable(format_totals_table(r$totals, cur, s$conf), align = "lrrrr")
+```
+
+## By age and sex
+
+```{r pyramid}
+plot_daly_pyramid(r$by_stratum)
+```
+
+```{r uncertainty}
+plot_measure_uncertainty(r$by_stratum, "DALY", s$conf)
+```
+
+```{r stratum-table}
+wide <- r$by_stratum[r$by_stratum$measure %in% c("Deaths", "Cases", "YLL", "YLD", "DALY"), ]
+tab <- reshape(wide[, c("age", "sex", "measure", "estimate")], idvar = c("age", "sex"),
+               timevar = "measure", direction = "wide")
+names(tab) <- sub("^estimate\\.", "", names(tab))
+tab <- tab[order(tab$sex != "Males", tab$age), ]
+tab$age <- age_group_labels(unique(r$by_stratum$age))[match(tab$age, sort(unique(r$by_stratum$age)))]
+names(tab)[1:2] <- c("Age group", "Sex")
+knitr::kable(tab, digits = c(0, 0, 0, 0, 1, 1, 1), row.names = FALSE,
+             format.args = list(big.mark = ","))
+```
+
+## By health state
+
+```{r states}
+knitr::kable(format_state_table(r$by_state, s$conf), align = "llrrrr")
+```
+
+## Economic burden
+
+Amounts in `r cur` (label only; no currency conversion applied).
+
+```{r econ}
+plot_economic_burden(r$totals, cur)
+```
+
+- Direct costs = cases × `r format_money(s$cost_per_case, cur, 2)` + deaths × `r format_money(s$cost_per_death, cur, 2)`
+- Productivity loss = DALYs × GDP per capita (`r format_money(s$gdp_per_capita, cur, 2)`)
+
+## Inputs and methods
+
+```{r hs-inputs}
+hs <- s$health_states
+knitr::kable(data.frame(
+  `Health state` = hs$health_state,
+  `Disability weight` = sprintf("%.3f (%.3f–%.3f)", hs$dw_mean, hs$dw_lower, hs$dw_upper),
+  Duration = sprintf("%s %s (%.4f years)", hs$duration, hs$duration_unit, hs$duration_years),
+  check.names = FALSE))
+```
+
+- DALY = YLL + YLD. YLL = deaths × standard life expectancy at the lower bound of the age group, from the preloaded GBD reference life table (no discounting, no age weighting). YLD = cases × disability weight × duration (incidence-based).
+- Uncertainty: `r format_num(s$n_iter)` Monte Carlo iterations (seed `r s$seed`). Disability weights drawn from PERT distributions (mode = mean, bounds = 95% CI); cases and deaths in each age-sex group drawn from Poisson distributions with the observed counts as means. The `r ci`% uncertainty interval is the 2.5th–97.5th percentile of the draws; the estimate column uses observed counts and mean disability weights.
+- Total population: `r format_num(s$population_total)`.

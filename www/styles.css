@@ -1,0 +1,8 @@
+/* Burden of Disease Calculator */
+.bslib-sidebar-layout > .sidebar h5 { font-weight: 600; }
+.form-group.shiny-input-container { margin-bottom: 0.6rem; }
+.shiny-input-container .form-label { font-size: 0.9rem; }
+.alert { border-radius: 0.4rem; }
+.bslib-value-box .value-box-value { font-size: 1.5rem; }
+.bslib-value-box .value-box-showcase .fa, .bslib-value-box .value-box-showcase svg { max-height: 2.2rem; }
+.navbar-brand { font-weight: 600; }

@@ -1,0 +1,4 @@
+condition,dw_mean,dw_lower_95,dw_upper_95,duration_years
+death,0,0,0,
+uncomplicated appendicitis,0.32,0.22,0.44,0.038
+complicated appendicitis,0.32,0.22,0.44,0.038
