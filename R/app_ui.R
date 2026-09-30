@@ -51,10 +51,11 @@ The currency is a label only; no exchange-rate or PPP conversion is applied.
 
 **Input files.** Population, deaths and each health state's cases are CSV files
 with the columns `age, males, females` and one row per age group, where `age` is the
-lower bound of the group (0, 1, 5, 10, …). A `total` row is ignored. All files
-must use exactly the same age groups as the population file. Semicolon-separated
-files with decimal commas (Excel in many European locales) are accepted. Use the
-*Download template* buttons to get correctly formatted empty files.
+lower bound of the group (0, 1, 5, 10, …), given as a single number rather than a
+range (not `5-9`) so Excel doesn't autoconvert it to a date. A `total` row is
+ignored. All files must use exactly the same age groups as the population file.
+Semicolon-separated files with decimal commas (Excel in many European locales) are
+accepted. Use the *Download template* buttons to get correctly formatted empty files.
 
 **References.** Devleesschauwer B, et al. Calculating disability-adjusted life
 years to quantify burden of disease. *Int J Public Health* 2014;59:565–69.

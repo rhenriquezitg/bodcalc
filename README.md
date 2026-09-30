@@ -39,11 +39,12 @@ DALY 10,526.5 (with 14 days = 0.0383 years).
 ## Input files
 
 Population, deaths and cases files are CSVs with the columns `age, males, females`,
-one row per age group, `age` being the lower bound of the group (0, 1, 5, 10, …).
-A `total` row is ignored. Semicolon-separated files with decimal commas are
-accepted. All files must use exactly the same age groups as the population file;
-a mismatch is rejected with an error. Each upload step has a
-**Download template** button.
+one row per age group, `age` being the lower bound of the group (0, 1, 5, 10, …),
+given as a single number rather than a range (not `5-9`) so Excel doesn't
+autoconvert it to a date. A `total` row is ignored. Semicolon-separated files
+with decimal commas are accepted. All files must use exactly the same age groups
+as the population file; a mismatch is rejected with an error. Each upload step has
+a **Download template** button.
 
 ## Methods (summary)
 
