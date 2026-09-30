@@ -47,8 +47,9 @@ a mismatch is rejected with an error. Each upload step has a
 
 ## Methods (summary)
 
-- YLL = deaths × GBD reference life expectancy at the lower bound of the age group
-  (interpolated onto the population's age groups; no discounting, no age weighting).
+- YLL = deaths × GBD reference life expectancy at the average age of the age
+  group's lower and upper bound (interpolated onto the population's age groups;
+  no discounting, no age weighting).
 - YLD = cases × disability weight × duration in years, summed over health states.
 - Uncertainty: per iteration, disability weights ~ PERT(lower, mean, upper);
   cases and deaths per age-sex group ~ Poisson(observed). Default 10,000 iterations,

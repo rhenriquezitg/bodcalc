@@ -85,6 +85,6 @@ knitr::kable(data.frame(
   check.names = FALSE))
 ```
 
-- DALY = YLL + YLD. YLL = deaths × standard life expectancy at the lower bound of the age group, from the preloaded GBD reference life table (no discounting, no age weighting). YLD = cases × disability weight × duration (incidence-based).
+- DALY = YLL + YLD. YLL = deaths × standard life expectancy at the average age of the age group's lower and upper bound, from the preloaded GBD reference life table (no discounting, no age weighting). YLD = cases × disability weight × duration (incidence-based).
 - Uncertainty: `r format_num(s$n_iter)` Monte Carlo iterations (seed `r s$seed`). Disability weights drawn from PERT distributions (mode = mean, bounds = 95% CI); cases and deaths in each age-sex group drawn from Poisson distributions with the observed counts as means. The `r ci`% uncertainty interval is the 2.5th–97.5th percentile of the draws; the estimate column uses observed counts and mean disability weights.
 - Total population: `r format_num(s$population_total)`.

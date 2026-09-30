@@ -27,10 +27,10 @@ methods_ui <- function() {
 **DALY = YLL + YLD**, calculated for one disease per run. The disease's health
 states (severity levels or complications) are entered in step 3.
 
-**Years of life lost (YLL)** = deaths × standard life expectancy at the lower
-bound of the age group. Life expectancy comes from the preloaded GBD reference life
-table, interpolated onto the age groups of the population file. No discounting and
-no age weighting are applied.
+**Years of life lost (YLL)** = deaths × standard life expectancy at the average
+age of the age group's lower and upper bound. Life expectancy comes from the preloaded
+GBD reference life table, interpolated onto the age groups of the population file. No
+discounting and no age weighting are applied.
 
 **Years lived with disability (YLD)** = cases × disability weight × duration
 (incidence-based), summed over all health states. Durations entered in days, weeks
