@@ -43,16 +43,22 @@ summarise_draws <- function(estimate, draws, conf = 0.95) {
 #' @param seed optional integer seed for reproducibility
 #' @param conf width of the uncertainty interval
 #' @param progress optional function(fraction, detail) for progress reporting
+#' @param discount_rate annual discount rate as a fraction (default 0 = none)
+#' @param age_weighting TRUE to apply GBD 1990 age weights (default FALSE)
 #' @return list(totals, by_stratum, by_state, draws, settings)
 run_burden_simulation <- function(population, deaths, health_states, life_table,
                                   gdp_per_capita, cost_per_case, cost_per_death,
                                   n_iter = 10000, seed = NULL, conf = 0.95,
-                                  progress = NULL) {
-  stopifnot(length(health_states) >= 1, n_iter >= 100)
+                                  progress = NULL, discount_rate = 0,
+                                  age_weighting = FALSE) {
+  stopifnot(length(health_states) >= 1, n_iter >= 100,
+            !is.na(discount_rate), discount_rate >= 0)
   if (!is.null(seed) && !is.na(seed)) set.seed(seed)
   tick <- function(f, d) if (is.function(progress)) progress(f, d)
 
-  det <- calc_daly_deterministic(population, deaths, health_states, life_table)
+  det <- calc_daly_deterministic(population, deaths, health_states, life_table,
+                                 discount_rate, age_weighting)
+  age_mid <- det$age_mid
   bs  <- det$by_stratum
   K   <- nrow(bs); n <- n_iter
   pop <- bs$population
@@ -60,7 +66,7 @@ run_burden_simulation <- function(population, deaths, health_states, life_table,
   # Deaths and YLL ----------------------------------------------------------
   tick(0.1, "Simulating deaths")
   D   <- rpois_matrix(n, bs$deaths)
-  YLL <- calc_yll(D, det$life_expectancy)
+  YLL <- calc_yll(D, det$life_expectancy, age_mid, discount_rate, age_weighting)
 
   # Cases and YLD per health state --------------------------------------------
   C_total <- matrix(0, n, K); YLD <- matrix(0, n, K)
@@ -71,7 +77,7 @@ run_burden_simulation <- function(population, deaths, health_states, life_table,
     cases <- det$by_state[[i]]$cases
     C  <- rpois_matrix(n, cases)
     dw <- rpert(n, hs$dw_lower, hs$dw_mean, hs$dw_upper)
-    Y  <- calc_yld(C, dw, hs$duration_years)
+    Y  <- calc_yld(C, dw, hs$duration_years, age_mid, discount_rate, age_weighting)
     C_total <- C_total + C
     YLD <- YLD + Y
     state_rows[[length(state_rows) + 1]] <- cbind(
@@ -138,6 +144,7 @@ run_burden_simulation <- function(population, deaths, health_states, life_table,
     by_state = do.call(rbind, state_rows),
     draws = draws,
     settings = list(n_iter = n_iter, seed = seed, conf = conf,
+                    discount_rate = discount_rate, age_weighting = age_weighting,
                     population_total = tot_pop,
                     gdp_per_capita = gdp_per_capita,
                     cost_per_case = cost_per_case, cost_per_death = cost_per_death,

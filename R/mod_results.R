@@ -13,6 +13,14 @@ mod_results_ui <- function(id) {
                             max = 100000, step = 1000),
         shiny::numericInput(ns("seed"), "Random seed", value = 2026, min = 1, step = 1)
       ),
+      shiny::h6("Discounting and age weighting", class = "mt-2"),
+      shiny::numericInput(ns("discount"), "Discount rate (% per year)", value = 0,
+                          min = 0, max = 10, step = 0.5),
+      shiny::radioButtons(ns("age_weighting"), "Age weighting", choices = c("No", "Yes"),
+                          selected = "No", inline = TRUE),
+      shiny::p(class = "small text-muted",
+               "The defaults (0% and No) count every year equally. 3% with age weighting",
+               "follows the original GBD 1990 convention."),
       shiny::h6("Checklist"),
       shiny::uiOutput(ns("checklist")),
       shiny::uiOutput(ns("button")),
@@ -37,7 +45,9 @@ mod_results_server <- function(id, population, deaths, health_states, economics,
              detail = h$issues),
         list(label = "Economic inputs", ok = e$ok, detail = e$issues),
         list(label = "Iterations between 1,000 and 100,000",
-             ok = !is.na(input$n_iter) && input$n_iter >= 1000 && input$n_iter <= 100000)
+             ok = !is.na(input$n_iter) && input$n_iter >= 1000 && input$n_iter <= 100000),
+        list(label = "Discount rate between 0% and 10%",
+             ok = !is.na(input$discount) && input$discount >= 0 && input$discount <= 10)
       )
     })
     ready <- shiny::reactive(all(vapply(checks(), function(x) isTRUE(x$ok), logical(1))))
@@ -70,7 +80,7 @@ mod_results_server <- function(id, population, deaths, health_states, economics,
            lapply(health_states()$states, function(s) s[c("name", "cases", "dw_mean",
                                                             "dw_lower", "dw_upper", "duration_years")]),
            economics()[c("currency", "gdp", "cost_case", "cost_death")],
-           input$n_iter, input$seed)
+           input$n_iter, input$seed, input$discount, input$age_weighting)
     })
 
     results <- shiny::reactiveVal(NULL)
@@ -85,6 +95,8 @@ mod_results_server <- function(id, population, deaths, health_states, economics,
             health_states = h$states, life_table = life_table,
             gdp_per_capita = e$gdp, cost_per_case = e$cost_case, cost_per_death = e$cost_death,
             n_iter = input$n_iter, seed = input$seed,
+            discount_rate = input$discount / 100,
+            age_weighting = identical(input$age_weighting, "Yes"),
             progress = function(f, d) shiny::setProgress(f, detail = d))
         }),
         error = function(err) {
@@ -131,6 +143,9 @@ mod_results_server <- function(id, population, deaths, health_states, economics,
       }
       shiny::tagList(
         if (nzchar(r$settings$title)) shiny::h4(r$settings$title),
+        shiny::p(class = "small text-muted",
+                 paste0("Settings: ", describe_weighting(r$settings$discount_rate,
+                                                         r$settings$age_weighting), ".")),
         bslib::layout_columns(
           col_widths = c(6, 6, 6, 6), fill = FALSE,
           vb("DALY", "DALYs", "heart-pulse"),
@@ -316,9 +331,13 @@ results_workbook <- function(r) {
     `Life table used` = s$life_expectancy,
     Settings = data.frame(
       setting = c("Analysis title", "Iterations", "Seed", "Uncertainty interval",
+                  "Discount rate", "Age weighting",
                   "Currency (label only)", "GDP per capita", "Average cost per case",
                   "Average cost per death", "Total population", "Calculated at"),
-      value = c(s$title, s$n_iter, s$seed, paste0(round(s$conf * 100), "%"), s$currency,
+      value = c(s$title, s$n_iter, s$seed, paste0(round(s$conf * 100), "%"),
+                paste0(format(round(s$discount_rate * 100, 2), trim = TRUE), "%"),
+                if (isTRUE(s$age_weighting)) "Yes" else "No",
+                s$currency,
                 s$gdp_per_capita, s$cost_per_case, s$cost_per_death, s$population_total,
                 format(s$timestamp, "%Y-%m-%d %H:%M:%S")))
   )

@@ -1,15 +1,4 @@
-appendicitis <- function() {
-  p <- load_age_sex_upload(example_file("population_pyramid.csv"), "Population")
-  ages <- sort(unique(p$data$age))
-  d <- load_age_sex_upload(example_file("appendicitis_deaths.csv"), "Deaths", ages)
-  u <- load_age_sex_upload(example_file("appendicitis_uncomplicated_cases.csv"), "Cases", ages)
-  c <- load_age_sex_upload(example_file("appendicitis_complicated_cases.csv"), "Cases", ages)
-  list(pop = p$data, deaths = d$data, hs = list(
-    list(name = "Uncomplicated", cases = u$data, dw_mean = 0.32, dw_lower = 0.22,
-         dw_upper = 0.44, duration_years = 0.038),
-    list(name = "Complicated", cases = c$data, dw_mean = 0.32, dw_lower = 0.22,
-         dw_upper = 0.44, duration_years = 0.038)))
-}
+# The `appendicitis()` example data helper lives in setup.R.
 
 test_that("deterministic YLL, YLD and DALY match a hand calculation", {
   a <- appendicitis()

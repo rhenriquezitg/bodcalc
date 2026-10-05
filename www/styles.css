@@ -6,3 +6,5 @@
 .bslib-value-box .value-box-value { font-size: 1.5rem; }
 .bslib-value-box .value-box-showcase .fa, .bslib-value-box .value-box-showcase svg { max-height: 2.2rem; }
 .navbar-brand { font-weight: 600; }
+.app-footer { border-top: 1px solid #dee2e6; margin-top: 1.5rem; }
+.tab-pane .card + .card { margin-top: 1rem; }

@@ -21,6 +21,19 @@ age_group_labels <- function(ages) {
          ifelse(upper == ages, as.character(ages), paste0(ages, "-", upper)))
 }
 
+#' Midpoint (exact age, in years) of each age group, from the lower bounds.
+#' Group i covers [lower_i, lower_i+1), so "5-9" has midpoint 7.5, "1-4" has 3
+#' and "<1" has 0.5. The open-ended last group is assumed to be `open_width`
+#' years wide (95+ is treated as 95-100, midpoint 97.5).
+#' Used as the age at death or onset for discounting and age weighting.
+#' @return numeric vector aligned with `ages`
+age_midpoints <- function(ages, open_width = 5) {
+  u <- sort(unique(ages))
+  upper <- c(u[-1], u[length(u)] + open_width)
+  mid <- (u + upper) / 2
+  mid[match(ages, u)]
+}
+
 #' Compare an uploaded age grid against the reference grid (population upload).
 #' @return NULL when identical, otherwise a character error message.
 compare_age_grids <- function(reference, candidate, what = "This file") {

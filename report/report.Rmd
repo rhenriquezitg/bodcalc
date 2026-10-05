@@ -85,6 +85,11 @@ knitr::kable(data.frame(
   check.names = FALSE))
 ```
 
-- DALY = YLL + YLD. YLL = deaths × standard life expectancy at the average age of the age group's lower and upper bound, from the preloaded GBD reference life table (no discounting, no age weighting). YLD = cases × disability weight × duration (incidence-based).
+- DALY = YLL + YLD. YLL = deaths × standard life expectancy at the average age of the age group's lower and upper bound, from the preloaded GBD reference life table. YLD = cases × disability weight × duration (incidence-based).
+- Discounting and age weighting: `r describe_weighting(s$discount_rate, s$age_weighting)`. `r if (s$discount_rate == 0 && !isTRUE(s$age_weighting)) "Every year counts equally." else "Years are discounted continuously at the stated rate and, if age weighting is on, weighted by 0.1658 x e^(-0.04 x) at age x (GBD 1990), using the midpoint of each age group as the age at death or onset."`
 - Uncertainty: `r format_num(s$n_iter)` Monte Carlo iterations (seed `r s$seed`). Disability weights drawn from PERT distributions (mode = mean, bounds = 95% CI); cases and deaths in each age-sex group drawn from Poisson distributions with the observed counts as means. The `r ci`% uncertainty interval is the 2.5th–97.5th percentile of the draws; the estimate column uses observed counts and mean disability weights.
 - Total population: `r format_num(s$population_total)`.
+
+---
+
+Created by Rodrigo Henriquez, TB Unit, Institute of Tropical Medicine (ITM) Antwerp, 2026. For educational purposes only. Source: https://github.com/rhenriquezitg/bodcalc
